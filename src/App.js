@@ -9,12 +9,6 @@ import Register from "./Components/Register/Register";
 import Rank from "./Components/Rank/Rank";
 import './App.css';
 import 'tachyons';
-import Clarifai from 'clarifai';
-import apiConfig from './apiKeys';
-
-const app = new Clarifai.App({
-  apiKey: apiConfig.facerecognition
-});
 
 const particlesOptions = {
   "particles": {
@@ -181,10 +175,14 @@ const initialState = {
   
     onButtonSubmit = () => {
       this.setState({imageUrl: this.state.input});
-      app.models
-        .predict(
-          Clarifai.FACE_DETECT_MODEL,
-          this.state.input)
+        fetch('http://localhost:3001/imageurl', {
+          method: 'post',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            input: this.state.input
+          })
+        })  
+        .then(response => response.json())
         .then(response => {
           if (response) {
             fetch('http://localhost:3001/image', {
@@ -198,7 +196,7 @@ const initialState = {
               .then(count => {
                 this.setState(Object.assign(this.state.user, { entries: count}))
               })
-  
+              .catch(console.log);
           }
           this.displayFaceBox(this.calculateFaceLocation(response))
         })
